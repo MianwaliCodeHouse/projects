@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bill Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #bill-container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    #total {
+      font-weight: bold;
+    }
+    button {
+      background-color: #4caf50;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .delete-btn {
+      background-color: #ff3333;
+      color: #fff;
+      padding: 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="bill-container">
+  <h2>Bill Generator</h2>
+  
+  <label for="itemCode">Item Code:</label>
+  <input type="text" id="itemCode" placeholder="Item Code">
+  
+  <label for="itemName">Item Name:</label>
+  <input type="text" id="itemName" placeholder="Item Name">
+  
+  <label for="price">Price:</label>
+  <input type="number" id="price" placeholder="Price">
+  
+  <label for="quantity">Quantity:</label>
+  <input type="number" id="quantity" placeholder="Quantity">
+  
+  <label for="discount">Discount (%):</label>
+  <input type="number" id="discount" placeholder="Discount">
+  
+  <button onclick="addItem()">Add Item</button>
+
+  <table id="billTable">
+    <thead>
+      <tr>
+        <th>Item Code</th>
+        <th>Item Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Discount</th>
+        <th>Discount Price</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="billBody">
+    </tbody>
+  </table>
+
+  <div id="total">Total: $0.00</div>
+
+  <label for="clientPayment">Client Payment:</label>
+  <input type="number" id="clientPayment" placeholder="Client Payment">
+  
+  <div id="change">Change: $0.00</div>
+  
+  <button onclick="generatePrintable()">Generate Printable Template</button>
+</div>
+
+<script>
+  let items = [];
+
+  function addItem() {
+    const itemCode = document.getElementById('itemCode').value;
+    const itemName = document.getElementById('itemName').value;
+    const price = parseFloat(document.getElementById('price').value);
+    const quantity = parseInt(document.getElementById('quantity').value);
+    const discount = parseFloat(document.getElementById('discount').value);
+
+    if (!itemCode || !itemName || isNaN(price) || isNaN(quantity) || isNaN(discount)) {
+      alert('Please fill in all the fields with valid values.');
+      return;
+    }
+
+    const discountPrice = price - (price * (discount / 100));
+    const total = discountPrice * quantity;
+
+    items.push({ itemCode, itemName, price, quantity, discount, discountPrice, total });
+    displayItems();
+    calculateTotal();
+    clearInputFields();
+  }
+
+  function displayItems() {
+    const billBody = document.getElementById('billBody');
+    billBody.innerHTML = '';
+
+    items.forEach((item, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item.itemCode}</td>
+        <td>${item.itemName}</td>
+        <td>${item.price}</td>
+        <td>${item.quantity}</td>
+        <td>${item.discount}%</td>
+        <td>${item.discountPrice.toFixed(2)}</td>
+        <td>${item.total.toFixed(2)}</td>
+        <td><button class="delete-btn" onclick="deleteItem(${index})">Delete</button></td>
+      `;
+      billBody.appendChild(row);
+    });
+  }
+
+  function calculateTotal() {
+    const totalElement = document.getElementById('total');
+    const totalAmount = items.reduce((acc, item) => acc + item.total, 0);
+    totalElement.textContent = `Total: $${totalAmount.toFixed(2)}`;
+  }
+
+  function deleteItem(index) {
+    items.splice(index, 1);
+    displayItems();
+    calculateTotal();
+  }
+
+  function clearInputFields() {
+    document.getElementById('itemCode').value = '';
+    document.getElementById('itemName').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('quantity').value = '';
+    document.getElementById('discount').value = '';
+  }
+
+  function generatePrintable() {
+    const clientPayment = parseFloat(document.getElementById('clientPayment').value);
+    
+
+    const totalAmount = items.reduce((acc, item) => acc + item.total, 0);
+    const change = clientPayment - totalAmount;
+    if (isNaN(clientPayment) && change>=0) {
+      alert('Please enter a valid client payment amount.');
+      return;
+    }
+    document.getElementById('change').textContent = `Change: $${change.toFixed(2)}`;
+
+    // You can customize the printable template here, for example, by opening a new window with a formatted template.
+    alert('Printable template generated. Change: $' + change.toFixed(2));
+  }
+</script>
+
+</body>
+</html>
